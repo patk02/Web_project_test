@@ -77,11 +77,16 @@
                         </td>
                     </tr>
                 </table>
-            
+                <br>
+                <label for="price">ราคาทั้งหมด: </label>
+                <span id="totalPrice">0</span> บาท
+                <br>
                 <button type="button" id="submitBooking">จองสนาม</button>
             </form>
 
             <script>
+                let fieldPrices = {}; // Store field prices by field_id
+
                 function checkUsername() {
                     const username = localStorage.getItem('username'); // Retrieve username from localStorage
                     if (username) {
@@ -103,6 +108,9 @@
                                 option.value = field.field_id; // Use field_id as the value
                                 option.textContent = `${field.field_name} ${field.field_id} (${field.field_type}) - ฿${field.price_per_hour}/hour`;
                                 fieldSelect.appendChild(option);
+
+                                // Store the price per hour for each field
+                                fieldPrices[field.field_id] = field.price_per_hour;
                             });
                         } else {
                             console.error('Failed to fetch fields:', await response.text());
@@ -112,8 +120,20 @@
                     }
                 }
 
+                function calculateTotalPrice() {
+                    const field_id = parseInt(document.getElementById('field').value, 10); // Get selected field_id
+                    const hours = parseInt(document.getElementById('hours').value, 10); // Get selected hours
+                    const pricePerHour = fieldPrices[field_id] || 0; // Get price per hour for the selected field
+                    const totalPrice = hours * pricePerHour; // Calculate total price
+                    document.getElementById('totalPrice').textContent = totalPrice; // Update total price display
+                }
+
                 // Call the function to populate fields when the page loads
                 document.addEventListener('DOMContentLoaded', populateFields);
+
+                // Add event listeners to update the total price when field or hours change
+                document.getElementById('field').addEventListener('change', calculateTotalPrice);
+                document.getElementById('hours').addEventListener('change', calculateTotalPrice);
 
                 document.getElementById('submitBooking').addEventListener('click', async () => {
                     const field_id = parseInt(document.getElementById('field').value, 10); // Convert field_id to a Number
