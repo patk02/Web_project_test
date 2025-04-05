@@ -106,24 +106,32 @@ app.post('/add-booking', (req, res) => {
 // API endpoint to create a booking
 app.post('/create-booking', async (req, res) => {
     try {
-        const { field_id, date, start_time, hours, user_id, username } = req.body;
+        const { field_id, date, start_time, hours, username } = req.body;
 
         console.log('Request body:', req.body); // Log the request body for debugging
 
         // Validate required fields
-        if (!field_id || !date || !start_time || !hours || !user_id || !username) {
+        if (!field_id || !date || !start_time || !hours || !username) {
             return res.status(400).json({ error: 'All fields are required.' });
-        }
-
-        // Validate field_id as a Number and user_id as ObjectId
-        if (typeof field_id !== 'number' || !mongoose.Types.ObjectId.isValid(user_id)) {
-            return res.status(400).json({ error: 'Invalid field_id or user_id.' });
         }
 
         // Calculate end_time
         const [startHour, startMinute] = start_time.split(':').map(Number);
         const endHour = startHour + parseInt(hours, 10);
         const end_time = `${endHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+
+        // Check for overlapping bookings
+        const existingBooking = await Booking.findOne({
+            field_id,
+            date: new Date(date),
+            $or: [
+                { start_time: { $lt: end_time }, end_time: { $gt: start_time } } // Overlapping time range
+            ]
+        });
+
+        if (existingBooking) {
+            return res.status(400).json({ error: 'The selected time slot is already booked.' });
+        }
 
         // Create a new booking
         const newBooking = new Booking({
