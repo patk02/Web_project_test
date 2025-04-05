@@ -7,7 +7,82 @@
     <title>Sport Booking</title>
     <link rel="stylesheet" href="homestylesheet.css">
     <script src="changeLanguage.js" defer></script> 
-    
+    <style>
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0, 0, 0, 0.4); /* Black background with opacity */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto; /* 10% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%; /* Could be more or less, depending on screen size */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            margin: 10px 0;
+            color: #555;
+        }
+
+        .modal-content button {
+            display: block;
+            margin: 20px auto 0;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -77,11 +152,31 @@
                         </td>
                     </tr>
                 </table>
-            
+                <br>
+                <label for="price">ราคาทั้งหมด: </label>
+                <span id="totalPrice">0</span> บาท
+                <br>
                 <button type="button" id="submitBooking">จองสนาม</button>
             </form>
 
+            <!-- Modal for booking details -->
+            <div id="bookingModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span id="closeModal" class="close">&times;</span>
+                    <h2>รายละเอียดการจอง</h2>
+                    <p><strong>ชื่อสนาม:</strong> <span id="modalFieldName"></span></p>
+                    <p><strong>วันที่:</strong> <span id="modalDate"></span></p>
+                    <p><strong>เวลาเริ่ม:</strong> <span id="modalStartTime"></span></p>
+                    <p><strong>เวลาสิ้นสุด:</strong> <span id="modalEndTime"></span></p>
+                    <p><strong>ราคาทั้งหมด:</strong> <span id="modalTotalPrice"></span> บาท</p>
+                    <button id="confirmBooking">ยืนยันการจอง</button>
+                </div>
+            </div>
+
             <script>
+                let fieldPrices = {}; // Store field prices by field_id
+                let fieldNames = {}; // Store field names by field_id
+
                 function checkUsername() {
                     const username = localStorage.getItem('username'); // Retrieve username from localStorage
                     if (username) {
@@ -89,8 +184,8 @@
                     } else {
                         alert('No username found in localStorage.');
                     }
-                    
                 }
+
                 async function populateFields() {
                     try {
                         const response = await fetch('http://localhost:3000/fields');
@@ -103,6 +198,10 @@
                                 option.value = field.field_id; // Use field_id as the value
                                 option.textContent = `${field.field_name} ${field.field_id} (${field.field_type}) - ฿${field.price_per_hour}/hour`;
                                 fieldSelect.appendChild(option);
+
+                                // Store the price per hour and field name for each field
+                                fieldPrices[field.field_id] = field.price_per_hour;
+                                fieldNames[field.field_id] = field.field_name;
                             });
                         } else {
                             console.error('Failed to fetch fields:', await response.text());
@@ -112,10 +211,54 @@
                     }
                 }
 
+                function calculateTotalPrice() {
+                    const field_id = parseInt(document.getElementById('field').value, 10); // Get selected field_id
+                    const hours = parseInt(document.getElementById('hours').value, 10); // Get selected hours
+                    const pricePerHour = fieldPrices[field_id] || 0; // Get price per hour for the selected field
+                    const totalPrice = hours * pricePerHour; // Calculate total price
+                    document.getElementById('totalPrice').textContent = totalPrice; // Update total price display
+                }
+
+                function openModal() {
+                    const field_id = parseInt(document.getElementById('field').value, 10);
+                    const date = document.getElementById('date').value;
+                    const start_time = document.getElementById('start-time').value;
+                    const hours = parseInt(document.getElementById('hours').value, 10);
+                    const pricePerHour = fieldPrices[field_id] || 0;
+                    const totalPrice = hours * pricePerHour;
+
+                    // Calculate end time
+                    const [startHour, startMinute] = start_time.split(':').map(Number);
+                    const endHour = startHour + hours;
+                    const end_time = `${endHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
+
+                    // Populate modal details
+                    document.getElementById('modalFieldName').textContent = fieldNames[field_id] || 'N/A';
+                    document.getElementById('modalDate').textContent = date;
+                    document.getElementById('modalStartTime').textContent = start_time;
+                    document.getElementById('modalEndTime').textContent = end_time;
+                    document.getElementById('modalTotalPrice').textContent = totalPrice;
+
+                    // Show modal
+                    document.getElementById('bookingModal').style.display = 'block';
+                }
+
+                function closeModal() {
+                    document.getElementById('bookingModal').style.display = 'none';
+                }
+
                 // Call the function to populate fields when the page loads
                 document.addEventListener('DOMContentLoaded', populateFields);
 
-                document.getElementById('submitBooking').addEventListener('click', async () => {
+                // Add event listeners to update the total price when field or hours change
+                document.getElementById('field').addEventListener('change', calculateTotalPrice);
+                document.getElementById('hours').addEventListener('change', calculateTotalPrice);
+
+                document.getElementById('submitBooking').addEventListener('click', openModal);
+
+                document.getElementById('closeModal').addEventListener('click', closeModal);
+
+                document.getElementById('confirmBooking').addEventListener('click', async () => {
                     const field_id = parseInt(document.getElementById('field').value, 10); // Convert field_id to a Number
                     const date = document.getElementById('date').value;
                     const start_time = document.getElementById('start-time').value;
@@ -145,6 +288,7 @@
                             const result = await response.json();
                             alert('Booking created successfully!');
                             console.log(result);
+                            closeModal(); // Close the modal after successful booking
                         } else {
                             const error = await response.text();
                             alert('Failed to create booking: ' + error);

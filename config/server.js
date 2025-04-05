@@ -46,7 +46,7 @@ const Booking = mongoose.model('Booking', bookingSchema);
 const fieldSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     field_id: Number,
-    name: String,
+    field_name: String,
     field_type: String,
     price_per_hour: Number
 });
@@ -168,6 +168,41 @@ app.get('/fields', async (req, res) => {
     }
 });
 
+// API endpoint to add a new field
+app.post('/fields', async (req, res) => {
+    try {
+        const { field_id, field_name, field_type, price_per_hour } = req.body;
+
+        // Validate required fields
+        if (!field_id || !field_name || !field_type || typeof price_per_hour !== 'number' || price_per_hour <= 0) {
+            return res.status(400).json({ error: 'All fields are required and price_per_hour must be a positive number.' });
+        }
+
+        // Check if the field_id already exists
+        const existingField = await Field.findOne({ field_id });
+        if (existingField) {
+            return res.status(400).json({ error: 'Field with this field_id already exists.' });
+        }
+
+        // Create a new field
+        const newField = new Field({
+            _id: new mongoose.Types.ObjectId(),
+            field_id,
+            field_name, // Map field_name to the name field in the schema
+            field_type,
+            price_per_hour
+        });
+
+        // Save the field to the database
+        await newField.save();
+
+        res.status(201).json({ message: 'Field added successfully!', field: newField });
+    } catch (err) {
+        console.error('Error adding field:', err.message);
+        res.status(500).json({ error: 'Failed to add field.' });
+    }
+});
+
 // API endpoint for user signup
 app.post('/signup', async (req, res) => {
     try {
@@ -221,6 +256,46 @@ app.post('/login', async (req, res) => {
     } catch (err) {
         console.error('Error during login:', err);
         res.status(500).json({ error: 'Failed to log in.' });
+    }
+});
+
+// API endpoint to fetch all bookings
+app.get('/bookings', async (req, res) => {
+    try {
+        const bookings = await Booking.find({});
+        res.status(200).json(bookings);
+    } catch (err) {
+        console.error('Error fetching bookings:', err.message);
+        res.status(500).json({ error: 'Failed to fetch bookings.' });
+    }
+});
+
+// API endpoint to update the price_per_hour of a field
+app.put('/fields/:fieldId', async (req, res) => {
+    try {
+        const { fieldId } = req.params;
+        const { price_per_hour } = req.body;
+
+        // Validate price_per_hour
+        if (typeof price_per_hour !== 'number' || price_per_hour <= 0) {
+            return res.status(400).json({ error: 'Invalid price_per_hour. It must be a positive number.' });
+        }
+
+        // Find and update the field
+        const updatedField = await Field.findOneAndUpdate(
+            { field_id: parseInt(fieldId, 10) }, // Match field_id
+            { price_per_hour }, // Update price_per_hour
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedField) {
+            return res.status(404).json({ error: 'Field not found.' });
+        }
+
+        res.status(200).json({ message: 'Field updated successfully!', field: updatedField });
+    } catch (err) {
+        console.error('Error updating field:', err.message);
+        res.status(500).json({ error: 'Failed to update field.' });
     }
 });
 
