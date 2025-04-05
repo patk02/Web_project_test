@@ -36,7 +36,7 @@ const bookingSchema = new mongoose.Schema({
     start_time: String,
     end_time: String,
     hours: Number,
-    user_id: mongoose.Schema.Types.ObjectId
+    username: String,
 });
 
 // Create Model from Schema
@@ -53,6 +53,17 @@ const fieldSchema = new mongoose.Schema({
 
 // Create a model for the fields collection
 const Field = mongoose.model('Field', fieldSchema);
+
+// Define the schema for the users collection
+const userSchema = new mongoose.Schema({
+    _id: mongoose.Schema.Types.ObjectId,
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'user' } // Default role is 'user'
+});
+
+// Create a model for the users collection
+const User = mongoose.model('User', userSchema);
 
 // Fetch all bookings from the collection
 mongoose.connection.once('open', () => {
@@ -95,16 +106,13 @@ app.post('/add-booking', (req, res) => {
 // API endpoint to create a booking
 app.post('/create-booking', async (req, res) => {
     try {
-        const { field_id, date, start_time, hours, user_id } = req.body;
+        const { field_id, date, start_time, hours, username } = req.body;
+
+        console.log('Request body:', req.body); // Log the request body for debugging
 
         // Validate required fields
-        if (!field_id || !date || !start_time || !hours || !user_id) {
+        if (!field_id || !date || !start_time || !hours || !username) {
             return res.status(400).json({ error: 'All fields are required.' });
-        }
-
-        // Validate field_id and user_id as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(field_id) || !mongoose.Types.ObjectId.isValid(user_id)) {
-            return res.status(400).json({ error: 'Invalid field_id or user_id.' });
         }
 
         // Calculate end_time
@@ -112,15 +120,28 @@ app.post('/create-booking', async (req, res) => {
         const endHour = startHour + parseInt(hours, 10);
         const end_time = `${endHour.toString().padStart(2, '0')}:${startMinute.toString().padStart(2, '0')}`;
 
+        // Check for overlapping bookings
+        const existingBooking = await Booking.findOne({
+            field_id,
+            date: new Date(date),
+            $or: [
+                { start_time: { $lt: end_time }, end_time: { $gt: start_time } } // Overlapping time range
+            ]
+        });
+
+        if (existingBooking) {
+            return res.status(400).json({ error: 'The selected time slot is already booked.' });
+        }
+
         // Create a new booking
         const newBooking = new Booking({
             _id: new mongoose.Types.ObjectId(),
-            field_id: mongoose.Types.ObjectId(field_id),
+            field_id, // Use field_id as a Number
             date: new Date(date),
             start_time,
             end_time,
             hours: parseInt(hours, 10),
-            user_id: mongoose.Types.ObjectId(user_id)
+            username // Include the username in the document
         });
 
         // Save the booking to the database
@@ -131,7 +152,7 @@ app.post('/create-booking', async (req, res) => {
             booking: newBooking
         });
     } catch (err) {
-        console.error('Error creating booking:', err);
+        console.error('Error creating booking:', err); // Log the error for debugging
         res.status(500).json({ error: 'Failed to create booking.' });
     }
 });
@@ -144,6 +165,62 @@ app.get('/fields', async (req, res) => {
     } catch (err) {
         console.error('Error fetching fields:', err.message);
         res.status(500).send('Failed to fetch fields.');
+    }
+});
+
+// API endpoint for user signup
+app.post('/signup', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate required fields
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required.' });
+        }
+
+        // Check if the username already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists.' });
+        }
+
+        // Create a new user
+        const newUser = new User({
+            _id: new mongoose.Types.ObjectId(),
+            username,
+            password, // In a real application, hash the password before saving
+            role: 'user'
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: 'User signed up successfully!' });
+    } catch (err) {
+        console.error('Error during signup:', err);
+        res.status(500).json({ error: 'Failed to sign up.' });
+    }
+});
+
+// API endpoint for user login
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate required fields
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required.' });
+        }
+
+        // Check if the user exists
+        const user = await User.findOne({ username });
+        if (!user || user.password !== password) { // In a real application, compare hashed passwords
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        res.status(200).json({ message: 'Login successful!', user });
+    } catch (err) {
+        console.error('Error during login:', err);
+        res.status(500).json({ error: 'Failed to log in.' });
     }
 });
 
