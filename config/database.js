@@ -224,6 +224,46 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// API endpoint to fetch all bookings
+app.get('/bookings', async (req, res) => {
+    try {
+        const bookings = await Booking.find({});
+        res.status(200).json(bookings);
+    } catch (err) {
+        console.error('Error fetching bookings:', err.message);
+        res.status(500).json({ error: 'Failed to fetch bookings.' });
+    }
+});
+
+// API endpoint to update the price_per_hour of a field
+app.put('/fields/:fieldId', async (req, res) => {
+    try {
+        const { fieldId } = req.params;
+        const { price_per_hour } = req.body;
+
+        // Validate price_per_hour
+        if (typeof price_per_hour !== 'number' || price_per_hour <= 0) {
+            return res.status(400).json({ error: 'Invalid price_per_hour. It must be a positive number.' });
+        }
+
+        // Find and update the field
+        const updatedField = await Field.findOneAndUpdate(
+            { field_id: parseInt(fieldId, 10) }, // Match field_id
+            { price_per_hour }, // Update price_per_hour
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedField) {
+            return res.status(404).json({ error: 'Field not found.' });
+        }
+
+        res.status(200).json({ message: 'Field updated successfully!', field: updatedField });
+    } catch (err) {
+        console.error('Error updating field:', err.message);
+        res.status(500).json({ error: 'Failed to update field.' });
+    }
+});
+
 // Start the server
 app.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <link rel="stylesheet" href="adminstyles.css"> <!-- Link to the new CSS file -->
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Page</h1>
+
+        <h2>All Bookings</h2>
+        <table id="bookingsTable">
+            <thead>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Hours</th>
+                    <th>Username</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Booking rows will be populated here -->
+            </tbody>
+        </table>
+
+        <h2>All Fields</h2>
+        <table id="fieldsTable">
+            <thead>
+                <tr>
+                    <th>Field ID</th>
+                    <th>Field Name</th>
+                    <th>Field Type</th>
+                    <th>Price Per Hour</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Field rows will be populated here -->
+            </tbody>
+        </table>
+
+        <h2>Add New Field</h2>
+        <div class="form-container">
+            <input type="text" id="newFieldName" placeholder="Field Name" required>
+            <input type="text" id="newFieldType" placeholder="Field Type" required>
+            <input type="number" id="newFieldPrice" placeholder="Price Per Hour" required>
+            <button id="addFieldButton">Add Field</button>
+        </div>
+    </div>
+
+    <script>
+        async function fetchBookings() {
+            try {
+                const response = await fetch('http://localhost:3000/bookings');
+                if (response.ok) {
+                    const bookings = await response.json();
+                    const bookingsTable = document.getElementById('bookingsTable').querySelector('tbody');
+                    bookingsTable.innerHTML = ''; // Clear existing rows
+                    bookings.forEach(booking => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${booking.field}</td>
+                            <td>${booking.date.split('T')[0]}</td>
+                            <td>${booking.start_time}</td>
+                            <td>${booking.end_time}</td>
+                            <td>${booking.hours}</td>
+                            <td>${booking.username}</td>
+                        `;
+                        bookingsTable.appendChild(row);
+                    });
+                } else {
+                    console.error('Failed to fetch bookings:', await response.text());
+                }
+            } catch (err) {
+                console.error('Error fetching bookings:', err);
+            }
+        }
+
+        async function fetchFields() {
+            try {
+                const response = await fetch('http://localhost:3000/fields');
+                if (response.ok) {
+                    const fields = await response.json();
+                    const fieldsTable = document.getElementById('fieldsTable').querySelector('tbody');
+                    fieldsTable.innerHTML = ''; // Clear existing rows
+                    fields.forEach(field => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${field.field_id}</td>
+                            <td>${field.field_name}</td>
+                            <td>${field.field_type}</td>
+                            <td>
+                                <input type="number" value="${field.price_per_hour}" data-field-id="${field.field_id}" class="priceInput">
+                            </td>
+                            <td>
+                                <button onclick="updateFieldPrice(${field.field_id})">Update</button>
+                            </td>
+                        `;
+                        fieldsTable.appendChild(row);
+                    });
+                } else {
+                    console.error('Failed to fetch fields:', await response.text());
+                }
+            } catch (err) {
+                console.error('Error fetching fields:', err);
+            }
+        }
+
+        async function updateFieldPrice(fieldId) {
+            const priceInput = document.querySelector(`input[data-field-id="${fieldId}"]`);
+            const newPrice = parseFloat(priceInput.value);
+
+            try {
+                const response = await fetch(`http://localhost:3000/fields/${fieldId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ price_per_hour: newPrice })
+                });
+
+                if (response.ok) {
+                    alert('Field price updated successfully!');
+                    fetchFields(); // Refresh fields table
+                } else {
+                    const error = await response.text();
+                    alert('Failed to update field price: ' + error);
+                }
+            } catch (err) {
+                console.error('Error updating field price:', err);
+                alert('An error occurred while updating the field price.');
+            }
+        }
+
+        document.getElementById('addFieldButton').addEventListener('click', async () => {
+            const name = document.getElementById('newFieldName').value;
+            const fieldType = document.getElementById('newFieldType').value;
+            const pricePerHour = parseFloat(document.getElementById('newFieldPrice').value);
+
+            try {
+                const response = await fetch('http://localhost:3000/fields', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, field_type: fieldType, price_per_hour: pricePerHour })
+                });
+
+                if (response.ok) {
+                    alert('Field added successfully!');
+                    fetchFields(); // Refresh fields table
+                } else {
+                    const error = await response.text();
+                    alert('Failed to add field: ' + error);
+                }
+            } catch (err) {
+                console.error('Error adding field:', err);
+                alert('An error occurred while adding the field.');
+            }
+        });
+
+        // Fetch bookings and fields when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchBookings();
+            fetchFields();
+        });
+    </script>
+</body>
+</html>
