@@ -46,7 +46,7 @@ const Booking = mongoose.model('Booking', bookingSchema);
 const fieldSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     field_id: Number,
-    name: String,
+    field_name: String,
     field_type: String,
     price_per_hour: Number
 });
@@ -165,6 +165,41 @@ app.get('/fields', async (req, res) => {
     } catch (err) {
         console.error('Error fetching fields:', err.message);
         res.status(500).send('Failed to fetch fields.');
+    }
+});
+
+// API endpoint to add a new field
+app.post('/fields', async (req, res) => {
+    try {
+        const { field_id, field_name, field_type, price_per_hour } = req.body;
+
+        // Validate required fields
+        if (!field_id || !field_name || !field_type || typeof price_per_hour !== 'number' || price_per_hour <= 0) {
+            return res.status(400).json({ error: 'All fields are required and price_per_hour must be a positive number.' });
+        }
+
+        // Check if the field_id already exists
+        const existingField = await Field.findOne({ field_id });
+        if (existingField) {
+            return res.status(400).json({ error: 'Field with this field_id already exists.' });
+        }
+
+        // Create a new field
+        const newField = new Field({
+            _id: new mongoose.Types.ObjectId(),
+            field_id,
+            field_name, // Map field_name to the name field in the schema
+            field_type,
+            price_per_hour
+        });
+
+        // Save the field to the database
+        await newField.save();
+
+        res.status(201).json({ message: 'Field added successfully!', field: newField });
+    } catch (err) {
+        console.error('Error adding field:', err.message);
+        res.status(500).json({ error: 'Failed to add field.' });
     }
 });
 

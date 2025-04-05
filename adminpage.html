@@ -63,7 +63,7 @@
                     bookings.forEach(booking => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${booking.field}</td>
+                            <td>${booking.field_id}</td>
                             <td>${booking.date.split('T')[0]}</td>
                             <td>${booking.start_time}</td>
                             <td>${booking.end_time}</td>
@@ -137,7 +137,11 @@
         }
 
         document.getElementById('addFieldButton').addEventListener('click', async () => {
-            const name = document.getElementById('newFieldName').value;
+            const fieldsResponse = await fetch('http://localhost:3000/fields');
+            const fields = await fieldsResponse.json();
+            const fieldId = fields.length > 0 ? Math.max(...fields.map(field => field.field_id)) + 1 : 1; // Calculate next field_id
+
+            const fieldName = document.getElementById('newFieldName').value;
             const fieldType = document.getElementById('newFieldType').value;
             const pricePerHour = parseFloat(document.getElementById('newFieldPrice').value);
 
@@ -147,7 +151,12 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, field_type: fieldType, price_per_hour: pricePerHour })
+                    body: JSON.stringify({
+                        field_id: fieldId, // Dynamically calculated field_id
+                        field_name: fieldName,
+                        field_type: fieldType,
+                        price_per_hour: pricePerHour
+                    })
                 });
 
                 if (response.ok) {
