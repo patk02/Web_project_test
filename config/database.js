@@ -54,6 +54,17 @@ const fieldSchema = new mongoose.Schema({
 // Create a model for the fields collection
 const Field = mongoose.model('Field', fieldSchema);
 
+// Define the schema for the users collection
+const userSchema = new mongoose.Schema({
+    _id: mongoose.Schema.Types.ObjectId,
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    role: { type: String, default: 'user' } // Default role is 'user'
+});
+
+// Create a model for the users collection
+const User = mongoose.model('User', userSchema);
+
 // Fetch all bookings from the collection
 mongoose.connection.once('open', () => {
   console.log('Database connection is open. Fetching bookings...');
@@ -146,6 +157,62 @@ app.get('/fields', async (req, res) => {
     } catch (err) {
         console.error('Error fetching fields:', err.message);
         res.status(500).send('Failed to fetch fields.');
+    }
+});
+
+// API endpoint for user signup
+app.post('/signup', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate required fields
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required.' });
+        }
+
+        // Check if the username already exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username already exists.' });
+        }
+
+        // Create a new user
+        const newUser = new User({
+            _id: new mongoose.Types.ObjectId(),
+            username,
+            password, // In a real application, hash the password before saving
+            role: 'user'
+        });
+
+        await newUser.save();
+
+        res.status(201).json({ message: 'User signed up successfully!' });
+    } catch (err) {
+        console.error('Error during signup:', err);
+        res.status(500).json({ error: 'Failed to sign up.' });
+    }
+});
+
+// API endpoint for user login
+app.post('/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate required fields
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required.' });
+        }
+
+        // Check if the user exists
+        const user = await User.findOne({ username });
+        if (!user || user.password !== password) { // In a real application, compare hashed passwords
+            return res.status(401).json({ error: 'Invalid username or password.' });
+        }
+
+        res.status(200).json({ message: 'Login successful!', user });
+    } catch (err) {
+        console.error('Error during login:', err);
+        res.status(500).json({ error: 'Failed to log in.' });
     }
 });
 
