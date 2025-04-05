@@ -36,7 +36,7 @@ const bookingSchema = new mongoose.Schema({
     start_time: String,
     end_time: String,
     hours: Number,
-    user_id: mongoose.Schema.Types.ObjectId
+    username: String,
 });
 
 // Create Model from Schema
@@ -106,12 +106,12 @@ app.post('/add-booking', (req, res) => {
 // API endpoint to create a booking
 app.post('/create-booking', async (req, res) => {
     try {
-        const { field_id, date, start_time, hours, user_id } = req.body;
+        const { field_id, date, start_time, hours, user_id, username } = req.body;
 
         console.log('Request body:', req.body); // Log the request body for debugging
 
         // Validate required fields
-        if (!field_id || !date || !start_time || !hours || !user_id) {
+        if (!field_id || !date || !start_time || !hours || !user_id || !username) {
             return res.status(400).json({ error: 'All fields are required.' });
         }
 
@@ -133,7 +133,7 @@ app.post('/create-booking', async (req, res) => {
             start_time,
             end_time,
             hours: parseInt(hours, 10),
-            user_id: new mongoose.Types.ObjectId(user_id) // Ensure user_id is a valid ObjectId
+            username // Include the username in the document
         });
 
         // Save the booking to the database

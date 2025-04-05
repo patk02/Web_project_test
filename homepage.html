@@ -26,6 +26,7 @@
             <li><a id="mainmenu" href="homepage.html">หน้าหลัก</a></li>
             <li><a id="signup" href="signup.html">Sign Up</a></li>
             <li><a id="login" href="login.html" class="login">Login</a></li>
+            <li><button onclick="checkUsername()">check username</button></li>
         </ul>
     </nav>
 
@@ -61,7 +62,7 @@
                     <tr>
                         <td>
                             <label for="start-time">เวลาเริ่ม:</label>
-                            <input type="time" id="start-time" name="start_time" required>
+                            <input type="time" id="start-time" name="start_time" step="3600" required>
                         </td>
                         <td>
                             <label for="hours">เลือกชั่วโมง:</label>
@@ -81,6 +82,15 @@
             </form>
 
             <script>
+                function checkUsername() {
+                    const username = localStorage.getItem('username'); // Retrieve username from localStorage
+                    if (username) {
+                        alert('Username: ' + username);
+                    } else {
+                        alert('No username found in localStorage.');
+                    }
+                    
+                }
                 async function populateFields() {
                     try {
                         const response = await fetch('http://localhost:3000/fields');
@@ -111,13 +121,15 @@
                     const start_time = document.getElementById('start-time').value;
                     const hours = document.getElementById('hours').value;
                     const user_id = document.querySelector('input[name="user_id"]').value;
+                    const username = localStorage.getItem('username'); // Retrieve username from localStorage
 
                     const body = {
                         field_id, // Use the selected field's field_id as a Number
                         date,
                         start_time,
                         hours: parseInt(hours, 10),
-                        user_id
+                        user_id,
+                        username // Add username to the request body
                     };
 
                     try {
