@@ -55,6 +55,15 @@
     <script>
         async function fetchBookings() {
             try {
+                // Fetch all fields to map field_id to field_name
+                const fieldsResponse = await fetch('http://localhost:3000/fields');
+                const fields = await fieldsResponse.json();
+                const fieldMap = fields.reduce((map, field) => {
+                    map[field.field_id] = field.field_name;
+                    return map;
+                }, {});
+
+                // Fetch all bookings
                 const response = await fetch('http://localhost:3000/bookings');
                 if (response.ok) {
                     const bookings = await response.json();
@@ -63,7 +72,7 @@
                     bookings.forEach(booking => {
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${booking.field_id}</td>
+                            <td>${fieldMap[booking.field_id] || 'Unknown Field'}</td> <!-- Map field_id to field_name -->
                             <td>${booking.date.split('T')[0]}</td>
                             <td>${booking.start_time}</td>
                             <td>${booking.end_time}</td>
