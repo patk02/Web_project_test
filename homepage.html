@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sport Booking</title>
+    <link rel="stylesheet" href="homestylesheet.css">
+    <script src="changeLanguage.js" defer></script> <!-- เพิ่มการเชื่อมโยงกับไฟล์ JS -->
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">
+            <ul class="logo-bar">
+                <li><a><img src="pic/logo.png" alt="logo"></a></li>
+                <li>
+                    <p>Sport Field <br> Booking Platform</p>
+                </li>
+            </ul>
+        </div>
+        <ul class="bar">
+            <li><a href="javascript:void(0);" onclick="changeLanguage('th')">TH</a></li>
+            <li><a href="javascript:void(0);" onclick="changeLanguage('en')">ENG</a></li>
+            <li><a id="mainmenu" href="homepage.html">หน้าหลัก</a></li>
+            <li><a id="regis" href="register.html">สมัครสมาชิก</a></li>
+            <li><a id="log" href="login.js" class="login">ลงชื่อเข้าใช้งาน</a></li>
+        </ul>
+    </nav>
+
+    <section class="content">
+        <div class="booking">
+            <div class="text-content">
+                <h1 id="heading">จองสนามกีฬา</h1>
+                <p id="description">ยินดีต้อนรับสู่ Sport Field Booking Platform 
+                    <br> แพลตฟอร์มที่ให้บริการจองสนามกีฬาที่ง่าย 
+                    <br> และสะดวกที่สุดสำหรับทุกคน ไม่ว่าจะเป็น 
+                    <br> การจองสนามฟุตบอล, สนามแบดมินตันหรือ 
+                    <br>สนามบาสเกตบอล คุณสามารถจองได้ในไม่กี่ขั้นตอน!
+                    <br>เริ่มต้นที่ชั่วโมงละ 100 บาท
+                </p>
+            </div>
+            <form class="booking-form" action="javascript:void(0);" method="post">
+                <table>
+                    <tr>
+                        <td>
+                            <label for="field">เลือกสนามกีฬา:</label>
+                            <select id="field" name="field" required>
+                                <option value="">-- กรุณาเลือก --</option>
+                                <option value="football">สนามฟุตบอล</option>
+                                <option value="badminton">สนามแบดมินตัน</option>
+                                <option value="basketball">สนามบาสเกตบอล</option>
+                            </select>
+                        </td>
+                        <td>
+                            <label for="date">เลือกวันที่:</label>
+                            <input type="date" id="date" name="date" required>
+                        </td>
+                    </tr>
+            
+                    <tr>
+                        <td>
+                            <label for="start-time">เวลาเริ่ม:</label>
+                            <input type="time" id="start-time" name="start_time" required>
+                        </td>
+                        <td>
+                            <label for="hours">เลือกชั่วโมง:</label>
+                            <select id="hours" name="hours" required>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                        </td>
+                    </tr>
+                </table>
+            
+                <button type="submit">จองสนาม</button>
+            </form>
+            
+        </div>
+    </section>
+
+    <div class="hr-with-text">
+        <span class="hr-text">ตัวอย่างสนามกีฬา</span>
+    </div>
+
+    <section class="fieldpreview">
+        <ul class="preview">
+            <li><a><img src="pic/football.jpg" alt="footballfield"></a></li>
+            <li><a><img src="pic/basketball.jpg" alt="basketballfield"></a></li>
+            <li><a><img src="pic/badminton.webp" alt="badmintonfield"></a></li>
+        </ul>
+    </section>
+
+</body>
+
+</html>

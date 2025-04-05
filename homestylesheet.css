@@ -1,0 +1,232 @@
+.container {
+    max-width: 100%;
+    padding: 500;
+    margin: 100;
+}
+
+.navbar {
+    background-color: mediumturquoise;
+    display: flex;
+    justify-content: space-around;
+    /* จัดโลโก้ซ้าย เมนูขวา */
+    align-items: center;
+    padding: 10px 20px;
+    height: 50px;
+}
+
+/* ปรับขนาดโลโก้ */
+.logo img {
+    padding: 10px 10px 5px 10px;
+    height: 60px;
+}
+
+.logo-bar {
+    display: flex;
+    align-items: center;
+    /* จัดให้กลางแนวดิ่ง */
+    list-style: none;
+    /* เอาจุดหน้า li ออก */
+    gap: 10px;
+    /* ระยะห่างระหว่าง logo กับข้อความ */
+    margin: 0;
+    padding: 0;
+}
+
+.logo-img {
+    height: 40px;
+    /* ปรับขนาดโลโก้ตามต้องการ */
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: black;
+    margin: 0;
+    text-decoration: none;
+}
+
+
+/* สไตล์ของเมนู */
+/* สไตล์ของเมนู */
+.bar {
+    list-style: none;
+    display: flex;
+    gap: 5px;
+    /* ลดช่องว่างระหว่างเมนู */
+
+}
+
+/* ปรับขนาดปุ่มเมนูให้เท่ากัน */
+.bar li {
+    /* กระจายพื้นที่เท่ากัน */
+    display: flex;
+}
+
+.bar li a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    padding: 10px 15px;
+    /* กำหนด padding บน-ล่าง */
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    /* กำหนดความกว้างเท่ากัน */
+    height: 25px;
+    /* กำหนดความสูงเท่ากัน */
+    transition: 0.3s;
+    text-align: center;
+}
+
+.bar li a.login {
+    width: 100%;
+    padding: 10px 10px;
+}
+
+.bar li a:hover {
+    background-color: white;
+}
+
+.content {
+    background-color:rgb(146, 250, 189);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 80px 10px 100px;
+    margin: 5px 0px 5px 0px;
+    height: 380px;
+}
+
+.booking {
+    display: flex; /* ใช้ flexbox เพื่อจัดให้เป็นบรรทัดเดียว */
+    justify-content: space-between; /* ให้ข้อความและฟอร์มมีระยะห่างที่เหมาะสม */
+    align-items: flex-start; /* จัดการให้องค์ประกอบอยู่ด้านบน */
+    gap: 300px; /* เพิ่มระยะห่างระหว่างข้อความและฟอร์ม */
+}
+
+.booking-form {
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.booking-form table {
+    width: 100%;
+    border-collapse: collapse; /* ทำให้ขอบของตารางไม่ซ้อนกัน */
+}
+
+.booking-form td {
+    padding: 15px 60px;
+    vertical-align: middle;
+    font-size: 20px;
+    color: #333;
+}
+
+.booking-form label {
+    font-weight: bold;
+}
+
+.booking-form select,
+.booking-form input[type="date"],
+.booking-form input[type="time"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+.booking-form select:focus,
+.booking-form input[type="date"]:focus,
+.booking-form input[type="time"]:focus {
+    border-color: mediumturquoise;
+    outline: none;
+}
+
+.booking-form button {
+    width: 100%;
+    padding: 12px;
+    background-color: mediumturquoise;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.booking-form button:hover {
+    background-color: #00b3b3;
+    transform: scale(1.05);
+}
+
+.booking-form button:active {
+    transform: scale(1);
+}
+
+.hr-with-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-top: 1px solid black; /* เส้นขอบด้านบน */
+    position: relative;
+    margin: 50px 10px;
+}
+
+.hr-text {
+    background-color: white; /* ทำให้พื้นหลังเป็นสีขาวเพื่อให้ข้อความไม่ทับกับเส้น */
+    padding: 0 10px; /* เพิ่มช่องว่างรอบข้อความ */
+    position: absolute; /* ทำให้ข้อความอยู่บนเส้น */
+    top: -15px; /* ปรับตำแหน่งข้อความให้อยู่กลางเส้น */
+    font-size: 20px;
+}
+
+.previewfield {
+    display: flex;
+    justify-content: center; /* จัดให้อยู่กลางในแนวนอน */
+    align-items: center; /* จัดให้อยู่กลางในแนวตั้ง */
+    height: 100vh; /* ทำให้ section สูงเต็มหน้าจอ */
+}
+
+.preview {
+    display: flex;
+    justify-content: center; /* จัดรายการให้อยู่กลางในแนวนอน */
+    align-items: center; /* จัดรายการให้อยู่กลางในแนวตั้ง */
+    list-style-type: none; /* ลบจุดของรายการ */
+    padding: 0;
+    margin: 0;
+}
+
+.preview li {
+    margin: 0 15px; /* เพิ่มช่องว่างระหว่างรูปภาพ */
+}
+
+.preview li img {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    padding: 10px 50px;
+    /* กำหนด padding บน-ล่าง */
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 500px;
+    /* กำหนดความกว้างเท่ากัน */
+    height: 350px;
+    /* กำหนดความสูงเท่ากัน */
+    transition: 0.3s;
+    text-align: center;
+}
+
+
