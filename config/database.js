@@ -97,13 +97,15 @@ app.post('/create-booking', async (req, res) => {
     try {
         const { field_id, date, start_time, hours, user_id } = req.body;
 
+        console.log('Request body:', req.body); // Log the request body for debugging
+
         // Validate required fields
         if (!field_id || !date || !start_time || !hours || !user_id) {
             return res.status(400).json({ error: 'All fields are required.' });
         }
 
-        // Validate field_id and user_id as ObjectId
-        if (!mongoose.Types.ObjectId.isValid(field_id) || !mongoose.Types.ObjectId.isValid(user_id)) {
+        // Validate field_id as a Number and user_id as ObjectId
+        if (typeof field_id !== 'number' || !mongoose.Types.ObjectId.isValid(user_id)) {
             return res.status(400).json({ error: 'Invalid field_id or user_id.' });
         }
 
@@ -115,12 +117,12 @@ app.post('/create-booking', async (req, res) => {
         // Create a new booking
         const newBooking = new Booking({
             _id: new mongoose.Types.ObjectId(),
-            field_id: mongoose.Types.ObjectId(field_id),
+            field_id, // Use field_id as a Number
             date: new Date(date),
             start_time,
             end_time,
             hours: parseInt(hours, 10),
-            user_id: mongoose.Types.ObjectId(user_id)
+            user_id: new mongoose.Types.ObjectId(user_id) // Ensure user_id is a valid ObjectId
         });
 
         // Save the booking to the database
@@ -131,7 +133,7 @@ app.post('/create-booking', async (req, res) => {
             booking: newBooking
         });
     } catch (err) {
-        console.error('Error creating booking:', err);
+        console.error('Error creating booking:', err); // Log the error for debugging
         res.status(500).json({ error: 'Failed to create booking.' });
     }
 });

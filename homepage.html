@@ -105,14 +105,14 @@
                 document.addEventListener('DOMContentLoaded', populateFields);
 
                 document.getElementById('submitBooking').addEventListener('click', async () => {
-                    const field_id = document.getElementById('field').value; // Use the selected field's field_id
+                    const field_id = parseInt(document.getElementById('field').value, 10); // Convert field_id to a Number
                     const date = document.getElementById('date').value;
                     const start_time = document.getElementById('start-time').value;
                     const hours = document.getElementById('hours').value;
                     const user_id = document.querySelector('input[name="user_id"]').value;
 
                     const body = {
-                        field_id, // Use the selected field's field_id
+                        field_id, // Use the selected field's field_id as a Number
                         date,
                         start_time,
                         hours: parseInt(hours, 10),
