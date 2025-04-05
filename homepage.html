@@ -40,16 +40,15 @@
                     <br>เริ่มต้นที่ชั่วโมงละ 100 บาท
                 </p>
             </div>
-            <form class="booking-form" action="javascript:void(0);" method="post">
+            <form class="booking-form" id="bookingForm">
+                <input type="hidden" name="field_id" value="1"> <!-- Add field_id -->
+                <input type="hidden" name="user_id" value="605c72ef153207d45b6e8e6f"> <!-- Add user_id -->
                 <table>
                     <tr>
                         <td>
                             <label for="field">เลือกสนามกีฬา:</label>
                             <select id="field" name="field" required>
                                 <option value="">-- กรุณาเลือก --</option>
-                                <option value="football">สนามฟุตบอล</option>
-                                <option value="badminton">สนามแบดมินตัน</option>
-                                <option value="basketball">สนามบาสเกตบอล</option>
                             </select>
                         </td>
                         <td>
@@ -77,8 +76,72 @@
                     </tr>
                 </table>
             
-                <button type="submit">จองสนาม</button>
+                <button type="button" id="submitBooking">จองสนาม</button>
             </form>
+
+            <script>
+                async function populateFields() {
+                    try {
+                        const response = await fetch('http://localhost:3000/fields');
+                        if (response.ok) {
+                            const fields = await response.json();
+                            const fieldSelect = document.getElementById('field');
+                            fieldSelect.innerHTML = '<option value="">-- กรุณาเลือก --</option>'; // Reset options
+                            fields.forEach(field => {
+                                const option = document.createElement('option');
+                                option.value = field.field_id; // Use field_id as the value
+                                option.textContent = `${field.field_name} ${field.field_id} (${field.field_type}) - ฿${field.price_per_hour}/hour`;
+                                fieldSelect.appendChild(option);
+                            });
+                        } else {
+                            console.error('Failed to fetch fields:', await response.text());
+                        }
+                    } catch (err) {
+                        console.error('Error fetching fields:', err);
+                    }
+                }
+
+                // Call the function to populate fields when the page loads
+                document.addEventListener('DOMContentLoaded', populateFields);
+
+                document.getElementById('submitBooking').addEventListener('click', async () => {
+                    const field_id = document.getElementById('field').value; // Use the selected field's field_id
+                    const date = document.getElementById('date').value;
+                    const start_time = document.getElementById('start-time').value;
+                    const hours = document.getElementById('hours').value;
+                    const user_id = document.querySelector('input[name="user_id"]').value;
+
+                    const body = {
+                        field_id, // Use the selected field's field_id
+                        date,
+                        start_time,
+                        hours: parseInt(hours, 10),
+                        user_id
+                    };
+
+                    try {
+                        const response = await fetch('http://localhost:3000/create-booking', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            alert('Booking created successfully!');
+                            console.log(result);
+                        } else {
+                            const error = await response.text();
+                            alert('Failed to create booking: ' + error);
+                        }
+                    } catch (err) {
+                        console.error('Error:', err);
+                        alert('An error occurred while creating the booking.');
+                    }
+                });
+            </script>
             
         </div>
     </section>
